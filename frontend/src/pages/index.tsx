@@ -427,11 +427,8 @@ export default function Home() {
       <footer className="bg-gray-900 border-t border-gray-800 py-6 mt-8">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <p className="text-gray-400 text-sm">
-            This is a <span className="text-purple-400 font-semibold">A Maindframe Project</span> created by{' '}
+            This is a <span className="text-purple-400 font-semibold">Maindframe</span> project created by{' '}
             <span className="text-white font-semibold">Saket Rane</span>
-          </p>
-          <p className="text-gray-500 text-xs mt-2">
-            L2A - AI-Powered Document Q&A System
           </p>
         </div>
       </footer>
