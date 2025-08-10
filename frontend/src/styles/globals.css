@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+/* Replace Montserrat with Cofo Sans if available on Google Fonts */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import KaTeX CSS for math rendering */
+@import 'katex/dist/katex.min.css';
+
+/* Enhanced KaTeX styling for better rendering */
+.katex {
+  font-size: 1.1em;
+}
+
+.katex-display {
+  margin: 0.5em 0;
+  text-align: center;
+}
+
+/* Support for angle brackets and bra-ket notation */
+.katex .mord.mtight {
+  margin-right: 0.1em;
+}
+
+/* Ensure proper spacing for complex expressions */
+.katex .mspace {
+  margin-right: 0.1em;
+}
+
+/* Fix rendering issues with specific symbols */
+.katex .mbin,
+.katex .mrel {
+  margin: 0 0.2em;
+}
+
+/* Better color contrast for math in dark mode */
+.katex .mord {
+  color: inherit;
+}
+
+html, body {
+  font-family: 'Cofo Sans', 'Montserrat', sans-serif;
+  background: #0A0A0A;
+}
