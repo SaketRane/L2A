@@ -1,6 +1,19 @@
 # L2A - AI-Powered PDF Q&A System
 
-A full-stack application that allows users to upload PDF documents and ask questions about their content using AI-powered RAG (Retrieval-Augmented Generation) technology.
+A full-stack application that allows users to upload PDF documents ### Backend (Railway - Recommended)
+1. Go to [Railway](https://railway.app)
+2. Connect your GitHub repository
+3. Railway will auto-detect the backend configuration
+4. Set environment variables in Railway dashboard:
+   - `GOOGLE_API_KEY`: Your Google Gemini API key
+   - `CORS_ORIGINS`: Your frontend URL
+
+### Backend (Render - Alternative)
+1. Connect your GitHub repository to Render
+2. Render will detect `render.yaml` configuration automatically
+3. Set environment variables in Render dashboard:
+   - `GOOGLE_API_KEY`: Your Google Gemini API key
+   - `CORS_ORIGINS`: Your frontend URLk questions about their content using AI-powered RAG (Retrieval-Augmented Generation) technology.
 
 ## 🚀 Features
 
@@ -16,7 +29,7 @@ A full-stack application that allows users to upload PDF documents and ask quest
 - **Frontend**: Next.js with TypeScript, Tailwind CSS, and React
 - **Backend**: FastAPI with Python, RAG engine using sentence-transformers
 - **AI**: Google Gemini API for generation, BGE models for embeddings
-- **Deployment**: Vercel (frontend) + Render (backend)
+- **Deployment**: Vercel (frontend) + Railway/Render (backend)
 
 ## 📁 Project Structure
 

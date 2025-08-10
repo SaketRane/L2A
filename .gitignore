@@ -93,6 +93,7 @@ backend/bend/
 
 # Deployment artifacts
 backend/.renderignore
+backend/.railwayignore
 frontend/.vercelignore
 
 # Local development files
