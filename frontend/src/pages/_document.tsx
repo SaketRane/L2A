@@ -6,8 +6,7 @@ export default function Document() {
       <Head>
         <link
           rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css"
-          integrity="sha384-nRFUZD+Kpj28XXgGUaZ6F6Jvo4oWKdD3kKLDJpOQZ0Dt+VB8HXLs0OjVOxsHjfcN"
+          href="https://unpkg.com/katex@0.16.22/dist/katex.min.css"
           crossOrigin="anonymous"
         />
       </Head>

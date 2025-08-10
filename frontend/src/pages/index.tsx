@@ -49,9 +49,8 @@ export default function Home() {
     formData.append('file', file);
     
     try {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Uploading to:', `${API_BASE_URL}/upload-stream`);
-      }
+      console.log('API_BASE_URL:', API_BASE_URL);
+      console.log('Uploading to:', `${API_BASE_URL}/upload-stream`);
       
       const response = await fetch(`${API_BASE_URL}/upload-stream`, {
         method: 'POST',
