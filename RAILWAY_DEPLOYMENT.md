@@ -34,7 +34,8 @@ After deployment starts, set these environment variables:
 
 ### Railway Configuration
 - **Build Command**: `pip install -r requirements.txt` (auto-detected)
-- **Start Command**: `./start.sh production` (configured in railway.json)
+- **Start Command**: `./start.sh production` (configured in Procfile)
+- **Runtime**: Python 3.11 (specified in runtime.txt)
 - **Health Check**: `/health` endpoint
 - **Port**: Automatically assigned by Railway (handled by $PORT)
 
