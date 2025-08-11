@@ -48,7 +48,7 @@ class RAGEngine:
         # Initialize reranker
         try:
             print("🔄 Loading BGE reranker...")
-            self.reranker = FlagReranker('BAAI/bge-reranker-large', use_fp16=True)
+            self.reranker = FlagReranker('BAAI/bge-reranker-base', use_fp16=True)
             print("✅ Loaded BGE reranker")
         except Exception as e:
             raise RuntimeError(f"Failed to load reranker: {str(e)}")
@@ -557,7 +557,7 @@ class RAGEngine:
         q_emb = self.embedder.encode([query_text], convert_to_numpy=True, batch_size=1)
         
         # Search FAISS for more chunks initially (for reranking)
-        initial_k = min(k * 3, 30)  # Get 3x more chunks for reranking, but cap at 50
+        initial_k = min(k * 3, 30)  # Get 3x more chunks for reranking, but cap at 30
         print(f"🔍 Searching FAISS index for top {initial_k} chunks for reranking...")
         D, I = self.index.search(q_emb, initial_k)
         
