@@ -19,8 +19,14 @@ import hashlib
 import re
 import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
-# Download required NLTK data
-nltk.download('punkt', quiet=True)
+# Download required NLTK data with better error handling
+try:
+    import nltk
+    nltk.download('punkt', quiet=True)
+    nltk.download('punkt_tab', quiet=True)
+    print("✅ NLTK data downloaded successfully")
+except Exception as e:
+    print(f"⚠️ NLTK download warning: {e}")
 from nltk.tokenize import sent_tokenize
 
 class RAGEngine:
@@ -110,10 +116,25 @@ class RAGEngine:
             print(f"✅ Loaded with PyPDF2: {len(reader.pages)} pages.")
             return text, page_numbers
 
+    def _fallback_sentence_split(self, text: str) -> List[str]:
+        """Fallback sentence splitting when NLTK is not available."""
+        # Simple sentence splitting based on punctuation
+        import re
+        # Split on sentence-ending punctuation followed by whitespace
+        sentences = re.split(r'[.!?]+\s+', text)
+        # Clean and filter empty sentences
+        sentences = [s.strip() for s in sentences if s.strip()]
+        return sentences
+
     def _chunk_text_with_pages(self, text: str, page_numbers: List[int], max_tokens: int = 200, overlap_ratio: float = 0.2) -> List[Dict]:
         """Semantically chunk text into overlapping segments with page tracking."""
         try:
-            sentences = sent_tokenize(text)
+            # Try NLTK first, fallback to simple splitting
+            try:
+                sentences = sent_tokenize(text)
+            except (LookupError, Exception):
+                print("⚠️ Using fallback sentence splitting")
+                sentences = self._fallback_sentence_split(text)
             chunks = []
             current_chunk = []
             current_token_count = 0
