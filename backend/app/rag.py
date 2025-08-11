@@ -565,7 +565,17 @@ class RAGEngine:
         initial_indices = I[0].tolist()
         reranked_indices = self._rerank_chunks(query_text, initial_indices, top_k=k)
         
-        # Gather context using a window around each reranked chunk
+        # Track pages from ONLY the top 5 reranked chunks
+        top_5_reranked = reranked_indices[:5]  # Get only top 5 chunks
+        pages_from_top_chunks = set()
+        
+        for idx in top_5_reranked:
+            if idx < len(self.chunks):
+                chunk_data = self.chunks[idx]
+                if not isinstance(chunk_data, str) and 'pages' in chunk_data:
+                    pages_from_top_chunks.update(chunk_data['pages'])
+        
+        # Gather context using a window around each reranked chunk (for context)
         window_indices = set()
         for idx in reranked_indices:
             start = max(0, idx - window_size)
@@ -576,9 +586,8 @@ class RAGEngine:
         # Sort indices to maintain original order of chunks
         sorted_indices = sorted(list(window_indices))
         
-        # Gather contexts and track pages
+        # Gather contexts (use all window chunks for better context)
         contexts = []
-        all_pages_used = set()
         
         for idx in sorted_indices:
             chunk_data = self.chunks[idx]
@@ -587,10 +596,13 @@ class RAGEngine:
                 contexts.append(chunk_data)
             else:
                 contexts.append(chunk_data['text'])
-                all_pages_used.update(chunk_data['pages'])
         
-        print(f"✅ Retrieved {len(contexts)} context chunks from pages: {sorted(list(all_pages_used))}")
-        return contexts, window_indices, sorted(list(all_pages_used))
+        # Sort pages in descending order of relevance (top 5 chunks appear first in reranked_indices)
+        pages_used = sorted(list(pages_from_top_chunks))
+        
+        print(f"✅ Retrieved {len(contexts)} context chunks")
+        print(f"📄 Pages from top 5 most relevant chunks: {pages_used}")
+        return contexts, window_indices, pages_used
 
     def _generate_answer(self, original_question: str, refined_question: str, contexts: list, history: list, pages_used: list = None):
         """Generate the final answer using the LLM."""
