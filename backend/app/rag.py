@@ -1,4 +1,8 @@
 import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
 from PyPDF2 import PdfReader
 from sentence_transformers import SentenceTransformer
 from FlagEmbedding import FlagReranker
@@ -17,7 +21,6 @@ import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 # Download required NLTK data
 nltk.download('punkt', quiet=True)
-nltk.download('punkt_tab', quiet=True)
 from nltk.tokenize import sent_tokenize
 
 class RAGEngine:
@@ -25,12 +28,16 @@ class RAGEngine:
         print("\n🚀 Initializing RAG Engine...")
         load_dotenv()
         
-        # Use BGE-large-en-v1.5 for both embedding and tokenization
-        model_name = "BAAI/bge-large-en-v1.5"
+        # Use BGE-small-en-v1.5 for faster deployment with optimized settings
+        model_name = "BAAI/bge-small-en-v1.5"
         try:
             self.embedder = SentenceTransformer(model_name)
+            # Optimize model settings for faster processing
+            self.embedder.max_seq_length = 384  # Reduce sequence length for speed
+            print(f"✅ Loaded embedding model: {model_name} (max_seq_length: 384)")
+            
             self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-            print(f"✅ Loaded embedding model: {model_name}")
+            print(f"✅ Loaded tokenizer for: {model_name}")
         except Exception as e:
             raise RuntimeError(f"Failed to load embedding model: {str(e)}")
         
@@ -232,15 +239,15 @@ class RAGEngine:
             for chunk_data in chunks:
                 chunk_text = chunk_data['text']
                 # Additional safety check: truncate any chunks that are still too long
-                # Since we're using BGE-large-en-v1.5 with max_tokens=300, be more conservative
+                # Since we're using BGE-small-en-v1.5 with max_seq_length=384, be conservative
                 # Roughly 4 characters per token for English text
-                max_chars = 1200  # Conservative estimate for 300 tokens
+                max_chars = 1536  # Conservative estimate for 384 tokens
                 if len(chunk_text) > max_chars:
                     # Truncate to safe length
                     truncated = chunk_text[:max_chars]
                     # Try to end at a sentence boundary
                     last_period = truncated.rfind('.')
-                    if last_period > 800:  # Only truncate at sentence if we have enough content
+                    if last_period > 1200:  # Only truncate at sentence if we have enough content
                         truncated = truncated[:last_period + 1]
                     chunk_texts.append(truncated)
                     # Update the chunk data with truncated text for embedding but keep original for storage
@@ -260,13 +267,18 @@ class RAGEngine:
             print(f"🔍 Processing {len(chunk_texts)} chunks for embedding...")
             
             # Process chunks in batches to show progress
-            batch_size = 32  # Adjust based on your memory constraints
+            batch_size = 64  # Increased batch size for faster processing
             all_embeddings = []
             total_chunks = len(chunk_texts)
             
             for i in range(0, total_chunks, batch_size):
                 batch_texts = chunk_texts[i:i + batch_size]
-                batch_embeddings = self.embedder.encode(batch_texts, convert_to_numpy=True, show_progress_bar=False)
+                batch_embeddings = self.embedder.encode(
+                    batch_texts, 
+                    convert_to_numpy=True, 
+                    show_progress_bar=False,
+                    batch_size=64  # Use optimized batch size
+                )
                 all_embeddings.append(batch_embeddings)
                 
                 # Update progress
@@ -342,7 +354,7 @@ class RAGEngine:
             text, page_numbers = self._load_pdf_text(pdf_path)
             
             # Chunk the text with page metadata
-            self.chunks = self._chunk_text_with_pages(text, page_numbers)
+            self.chunks = self._chunk_text_with_pages(text, page_numbers, max_tokens=300)  # Increased for BGE-small
             print(f"🔖 Split into {len(self.chunks)} chunks with page metadata")
             
             # Build the index with progress callback
@@ -365,12 +377,12 @@ class RAGEngine:
             
             # Step 1: Take the raw user query and do a rough retrieval (truncate if too long)
             query_text = question
-            if len(query_text) > 1200:  # Safety truncation for BGE-large-en-v1.5
-                query_text = query_text[:1200]
-            q_emb = self.embedder.encode([query_text], convert_to_numpy=True)
+            if len(query_text) > 384:  # Safety truncation for BGE-small-en-v1.5
+                query_text = query_text[:384]
+            q_emb = self.embedder.encode([query_text], convert_to_numpy=True, batch_size=1)
             
             # Step 2: Run rough retrieval to get top-k contexts (even with vague query)
-            k_rough = 3  # Get top 3 hits for reformulation
+            k_rough = 5  # Get top 5 hits for reformulation
             D, I = self.index.search(q_emb, k_rough)
             
             # Step 3: Gather the retrieved contexts
@@ -534,11 +546,11 @@ class RAGEngine:
         
         # Embed the refined question (truncate if too long)
         query_text = refined_question
-        if len(query_text) > 1200:  # Safety truncation for long queries with BGE-large-en-v1.5
-            query_text = query_text[:1200]
+        if len(query_text) > 384:  # Safety truncation for long queries with BGE-small-en-v1.5
+            query_text = query_text[:384]
         
         print(f"🔮 Encoding query for embedding search...")
-        q_emb = self.embedder.encode([query_text], convert_to_numpy=True)
+        q_emb = self.embedder.encode([query_text], convert_to_numpy=True, batch_size=1)
         
         # Search FAISS for more chunks initially (for reranking)
         initial_k = min(k * 3, 30)  # Get 3x more chunks for reranking, but cap at 50
