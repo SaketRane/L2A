@@ -503,6 +503,14 @@ class RAGEngine:
             
         print(f"🔄 Reranking {len(chunk_indices)} chunks using BGE FlagReranker...")
         
+        # Calculate safe passage length based on reranker's max sequence length (512 tokens)
+        # Reserve tokens for query, special tokens, and safety margin
+        query_tokens = len(self.tokenizer.encode(query, add_special_tokens=False))
+        # BGE reranker uses special tokens and separators, reserve ~50 tokens for safety
+        max_passage_tokens = 512 - query_tokens - 50
+        # Convert tokens to approximate characters (rough estimate: 4 chars per token)
+        max_passage_chars = max(100, max_passage_tokens * 4)  # Ensure minimum of 100 chars
+        
         # Prepare query-chunk pairs for FlagReranker
         passages = []
         valid_indices = []
@@ -513,9 +521,20 @@ class RAGEngine:
                 # Handle both old format (strings) and new format (dicts)
                 chunk_text = chunk_data if isinstance(chunk_data, str) else chunk_data['text']
                 
-                # Truncate very long chunks for efficient reranking
-                if len(chunk_text) > 1000:
-                    chunk_text = chunk_text[:1000] + "..."
+                # Smart truncation based on actual token limits
+                if len(chunk_text) > max_passage_chars:
+                    # Truncate and try to end at sentence boundary
+                    truncated = chunk_text[:max_passage_chars]
+                    last_period = truncated.rfind('.')
+                    last_space = truncated.rfind(' ')
+                    
+                    # Use sentence boundary if available and reasonable
+                    if last_period > max_passage_chars * 0.7:
+                        chunk_text = truncated[:last_period + 1]
+                    elif last_space > max_passage_chars * 0.8:
+                        chunk_text = truncated[:last_space]
+                    else:
+                        chunk_text = truncated
                 
                 passages.append(chunk_text)
                 valid_indices.append(idx)
@@ -524,7 +543,11 @@ class RAGEngine:
             return chunk_indices
         
         # Get reranking scores using FlagReranker
-        scores = self.reranker.compute_score([[query, passage] for passage in passages])
+        try:
+            scores = self.reranker.compute_score([[query, passage] for passage in passages])
+        except Exception as e:
+            print(f"⚠️ Warning: Reranker failed ({str(e)}), falling back to original order")
+            return chunk_indices[:top_k] if top_k else chunk_indices
         
         # Handle both single score and list of scores
         if not isinstance(scores, list):
