@@ -229,7 +229,7 @@ export default function Home() {
       <div className="flex justify-center py-8">
         <div className="bg-white rounded-3xl shadow-xl px-2 py-2 flex flex-col items-center max-w-md w-full">
           <h1 className="text-5xl font-bold text-purple-600 mb-1">
-            Scriptoria
+            Scrptoria
           </h1>
           <p className="text-gray-600 text-lg mt-0">
             Making textbooks easy to understand
@@ -425,11 +425,30 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="bg-gray-900 border-t border-gray-800 py-6 mt-8">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <p className="text-gray-400 text-sm">
-            This is a <span className="text-purple-400 font-semibold">Maindframe</span> project created by{' '}
-            <span className="text-white font-semibold">Saket Rane</span>
-          </p>
+        <div className="max-w-4xl mx-auto px-4 relative">
+          {/* Logo - Absolute positioned on the left */}
+          <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+            <a 
+              href="https://maindframe.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center hover:opacity-80 transition-opacity"
+            >
+              <img 
+                src="/maindframe_logo.png" 
+                alt="Maindframe Logo" 
+                className="h-8 w-auto"
+              />
+            </a>
+          </div>
+          
+          {/* Text - Centered */}
+          <div className="text-center">
+            <p className="text-gray-400 text-sm">
+              This is a <span className="text-purple-400 font-semibold">Maindframe</span> project created by{' '}
+              <span className="text-white font-semibold">Saket Rane</span>
+            </p>
+          </div>
         </div>
       </footer>
     </div>

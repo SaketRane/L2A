@@ -28,7 +28,7 @@ railway up
 ### Environment Variables (Set in Railway Dashboard)
 After deployment starts, set these environment variables:
 
-1. **GOOGLE_API_KEY**: `AIzaSyDjiuP36smPH78MOHoqpu7bxQzytze8xds`
+1. **GOOGLE_API_KEY**: `AIzaSyDjiuP36smPH78MOHoqpu7b`
 2. **ENVIRONMENT**: `production`
 3. **CORS_ORIGINS**: `https://your-frontend-domain.com` (update after frontend deployment)
 

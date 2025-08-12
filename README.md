@@ -1,19 +1,19 @@
-# L2A - AI-Powered PDF Q&A System
+# Scrptoria
 
-A full-stack application that allows users to upload PDF documents ### Backend (Railway - Recommended)
-1. Go to [Railway](https://railway.app)
-2. Connect your GitHub repository
-3. Railway will auto-detect the backend configuration
-4. Set environment variables in Railway dashboard:
-   - `GOOGLE_API_KEY`: Your Google Gemini API key
-   - `CORS_ORIGINS`: Your frontend URL
+**Scrptoria** is an advanced document intelligence application that transforms static PDF documents into interactive knowledge sources through sophisticated Retrieval-Augmented Generation (RAG) techniques. The application enables users to upload academic papers, textbooks, or technical documents and engage in natural conversations with the content, receiving contextually accurate answers with precise page references.
 
-### Backend (Render - Alternative)
-1. Connect your GitHub repository to Render
-2. Render will detect `render.yaml` configuration automatically
-3. Set environment variables in Render dashboard:
-   - `GOOGLE_API_KEY`: Your Google Gemini API key
-   - `CORS_ORIGINS`: Your frontend URLk questions about their content using AI-powered RAG (Retrieval-Augmented Generation) technology.
+## 🧠 Advanced RAG Architecture
+
+Scrptoria employs a multi-stage RAG pipeline optimized for academic and technical content:
+
+- **Semantic Chunking**: Documents are intelligently segmented using sentence-aware tokenization that preserves mathematical expressions and maintains semantic coherence across page boundaries
+- **Dual-Model Embedding Strategy**: Utilizes BGE-small-en-v1.5 embeddings optimized for speed and accuracy, with careful token management to handle complex academic content
+- **Intelligent Reranking**: Implements BGE-reranker-base with dynamic token-aware truncation to identify the most relevant content chunks while maintaining semantic integrity
+- **Query Refinement**: Employs context-aware query enhancement using retrieved content to reformulate user questions for better semantic matching
+- **Windowed Context Retrieval**: Combines top-ranked chunks with surrounding context windows to provide comprehensive answers while tracking page-level provenance
+- **Page-Aware Citation**: Tracks and displays page numbers from only the top 5 most relevant chunks, ensuring citations reflect the highest-confidence sources
+
+The system processes mathematical notation, and technical terminology while maintaining fast response times through optimized batch processing and intelligent caching mechanisms.
 
 ## 🚀 Features
 
@@ -27,8 +27,9 @@ A full-stack application that allows users to upload PDF documents ### Backend (
 ## 🏗️ Architecture
 
 - **Frontend**: Next.js with TypeScript, Tailwind CSS, and React
-- **Backend**: FastAPI with Python, RAG engine using sentence-transformers
-- **AI**: Google Gemini API for generation, BGE models for embeddings
+- **Backend**: FastAPI with Python, RAG engine using sentence-transformers and FlagEmbedding
+- **AI**: Google Gemini 2.0 Flash for generation, BGE models for embeddings and reranking
+- **Vector Storage**: FAISS for efficient similarity search
 - **Deployment**: Vercel (frontend) + Railway/Render (backend)
 
 ## 📁 Project Structure
@@ -37,20 +38,26 @@ A full-stack application that allows users to upload PDF documents ### Backend (
 L2A/
 ├── frontend/           # Next.js frontend application
 │   ├── src/
-│   │   ├── components/ # React components
-│   │   ├── pages/      # Next.js pages
+│   │   ├── components/ # React components (AlternativeLatexRenderer, ErrorBoundary)
+│   │   ├── pages/      # Next.js pages (index, _app, _document, debug)
 │   │   └── styles/     # CSS styles
+│   ├── public/         # Static assets (logo, etc.)
 │   ├── package.json
 │   ├── next.config.js
-│   └── vercel.json     # Vercel deployment config
+│   ├── vercel.json     # Vercel deployment config
+│   └── .env.example    # Environment template
 ├── backend/            # FastAPI backend application
 │   ├── app/
 │   │   ├── main.py     # FastAPI application
 │   │   └── rag.py      # RAG engine implementation
+│   ├── bend/           # Virtual environment
 │   ├── requirements.txt
+│   ├── runtime.txt     # Python version for deployment
+│   ├── Procfile        # Railway deployment config
 │   ├── start.sh        # Development server script
-│   └── start_production.sh # Production server script
+│   └── .env.example    # Environment template
 ├── render.yaml         # Render deployment config
+├── RAILWAY_DEPLOYMENT.md # Railway deployment guide
 └── README.md
 ```
 
@@ -113,18 +120,19 @@ L2A/
 
 ## 🚀 Deployment
 
-### Backend (Render)
-1. Connect your GitHub repository to Render
-2. Render will detect the `render.yaml` configuration automatically
-3. Set environment variables in Render dashboard:
+### Backend (Railway/Render)
+1. Connect your GitHub repository to Railway or Render
+2. For Railway: Use the provided `Procfile` and `RAILWAY_DEPLOYMENT.md` guide
+3. For Render: Use the `render.yaml` configuration
+4. Set environment variables in your deployment platform:
    - `GOOGLE_API_KEY`: Your Google Gemini API key
-   - `CORS_ORIGINS`: Your frontend URL
+   - `CORS_ORIGINS`: Your frontend URL (e.g., https://yourapp.vercel.app)
 
 ### Frontend (Vercel)
 1. Connect your GitHub repository to Vercel
 2. Vercel will auto-detect Next.js configuration
 3. Set environment variables in Vercel dashboard:
-   - `NEXT_PUBLIC_API_BASE_URL`: Your backend URL from Render
+   - `NEXT_PUBLIC_API_BASE_URL`: Your backend URL (e.g., https://yourapp.railway.app)
 
 ## 🔧 Environment Variables
 
@@ -150,10 +158,11 @@ Once the backend is running, visit:
 
 ### Backend
 - **FastAPI**: Modern, fast web framework for Python
-- **Sentence Transformers**: For document embeddings
-- **FAISS**: Vector similarity search
-- **Google Gemini**: Large language model for Q&A
-- **PyMuPDF**: PDF text extraction
+- **Sentence Transformers**: BGE-small-en-v1.5 for document embeddings
+- **FlagEmbedding**: BGE-reranker-base for intelligent chunk reranking
+- **FAISS**: Vector similarity search and indexing
+- **Google Gemini 2.0 Flash**: Large language model for Q&A generation
+- **PyMuPDF/PyPDF2**: PDF text extraction with fallback support
 
 ### Frontend
 - **Next.js**: React framework with SSR/SSG
@@ -165,10 +174,13 @@ Once the backend is running, visit:
 ## 🔍 Features in Detail
 
 ### RAG Engine
-- Chunked document processing with overlap
-- BGE-large embeddings for semantic search
-- FAISS vector indexing for fast retrieval
-- Context-aware response generation
+- Semantic chunking with sentence-aware tokenization (300 tokens with 20% overlap)
+- BGE-small-en-v1.5 embeddings optimized for speed and accuracy
+- BGE-reranker-base for intelligent content reranking with token-aware truncation
+- FAISS vector indexing for fast similarity search
+- Context-aware query refinement using retrieved content
+- Windowed context retrieval with page-level provenance tracking
+- Smart page citation from top 5 most relevant chunks
 
 ### LaTeX Support
 - Full mathematical notation rendering
