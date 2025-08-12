@@ -425,9 +425,9 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="bg-gray-900 border-t border-gray-800 py-6 mt-8">
-        <div className="max-w-4xl mx-auto px-4 relative">
-          {/* Logo - Absolute positioned on the left */}
-          <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="flex items-center justify-center space-x-4">
+            {/* Logo - Just to the left of text */}
             <a 
               href="https://maindframe.com" 
               target="_blank" 
@@ -437,13 +437,11 @@ export default function Home() {
               <img 
                 src="/maindframe_logo.png" 
                 alt="Maindframe Logo" 
-                className="h-8 w-auto"
+                className="h-12 w-auto"
               />
             </a>
-          </div>
-          
-          {/* Text - Centered */}
-          <div className="text-center">
+            
+            {/* Text */}
             <p className="text-gray-400 text-sm">
               This is a <span className="text-purple-400 font-semibold">Maindframe</span> project created by{' '}
               <span className="text-white font-semibold">Saket Rane</span>
